@@ -1,10 +1,57 @@
-<html> 
-<head>
-  <title>
-    อนุธิดา พรมเมือง
-  </title>
-</head>
-<body>
-  Hello world
-</body>
-</html>
+import cv2
+import numpy as np
+
+# โหลดรูป
+img = cv2.imread("my_photo.jpg")
+
+# ปรับขนาด
+width = 80
+ratio = img.shape[0] / img.shape[1]
+height = int(width * ratio)
+img = cv2.resize(img, (width, height))
+
+# สี LEGO
+lego_colors = np.array([
+    [242, 243, 242],  # White
+    [161, 95, 53],    # Brown
+    [105, 64, 40],    # Dark Brown
+    [255, 205, 96],   # Skin
+    [27, 42, 52],     # Black
+    [160, 165, 169],  # Gray
+    [196, 40, 28],    # Red
+    [13, 105, 172],   # Blue
+    [245, 205, 48],   # Yellow
+])
+
+lego_img = np.zeros_like(img)
+
+# หาเฉด LEGO ที่ใกล้ที่สุด
+for y in range(height):
+    for x in range(width):
+        pixel = img[y, x]
+        dist = np.sum((lego_colors - pixel) ** 2, axis=1)
+        lego_img[y, x] = lego_colors[np.argmin(dist)]
+
+# ขยายภาพให้ดูเหมือนเลโก้
+scale = 12
+lego_img = cv2.resize(
+    lego_img,
+    (width * scale, height * scale),
+    interpolation=cv2.INTER_NEAREST
+)
+
+# วาดปุ่ม LEGO
+for y in range(height):
+    for x in range(width):
+        cx = x * scale + scale // 2
+        cy = y * scale + scale // 2
+        cv2.circle(
+            lego_img,
+            (cx, cy),
+            scale // 4,
+            (255, 255, 255),
+            1
+        )
+
+cv2.imwrite("lego_photo.png", lego_img)
+print("บันทึกไฟล์แล้ว: lego_photo.png")
